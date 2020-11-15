@@ -16,11 +16,11 @@ def translate(data):
     number = data['NumberOfData']
     resolution = data['AngularStepWidth']/10000
     #LMS1xx TiM5xx Start angle 0XFFF92230
-    if data['StartingAngle'] == 0xFFF92230:
-        deg = np.arange(start=-45, stop=225, step=resolution)
-    #LMS5xx FFFF3CB0
-    elif data['StartingAngle'] == 0xFFFF3CB0:
-        deg = np.arange(start=-5, stop=185, step=resolution)
+    # if data['StartingAngle'] == 0xFFF92230:
+    #     deg = np.arange(start=-45, stop=225, step=resolution)
+    # #LMS5xx FFFF3CB0
+    # elif data['StartingAngle'] == 0xFFFF3CB0:
+    deg = np.arange(start=-5, stop=185, step=resolution)
     point = data['Data']
     xl = [ np.sin(np.deg2rad(deg[i-1]))*point[i-1] for i in range(number)]
     yl = [ np.cos(np.deg2rad(deg[i-1]))*point[i-1] for i in range(number)]
@@ -35,7 +35,7 @@ if __name__ == '__main__':
     # node = zmqmsgbus.Node(bus)
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(("192.168.1.30", 2112))
+    s.connect(("192.168.0.30", 2112))
     # activate stream
     while True:
         s.send(b'\x02sRN LMDscandata \x03\0')
@@ -49,9 +49,9 @@ if __name__ == '__main__':
         plt.cla()
         plt.xlim(-10, 10)
         plt.ylim(-10, 10)
-        plt.axis('off')
+        # plt.axis('off')
         xl,yl = translate(datagrams_generator)
-        plt.autoscale(False)
+        # plt.autoscale(False)
         # plt.axis('scaled')
         plt.plot(yl, xl)
         plt.pause(0.1)

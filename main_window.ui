@@ -14,54 +14,6 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QFrame" name="frame">
-    <property name="geometry">
-     <rect>
-      <x>40</x>
-      <y>60</y>
-      <width>191</width>
-      <height>181</height>
-     </rect>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::StyledPanel</enum>
-    </property>
-    <property name="frameShadow">
-     <enum>QFrame::Raised</enum>
-    </property>
-   </widget>
-   <widget class="QFrame" name="frame_2">
-    <property name="geometry">
-     <rect>
-      <x>270</x>
-      <y>60</y>
-      <width>191</width>
-      <height>181</height>
-     </rect>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::StyledPanel</enum>
-    </property>
-    <property name="frameShadow">
-     <enum>QFrame::Raised</enum>
-    </property>
-   </widget>
-   <widget class="QFrame" name="frame_3">
-    <property name="geometry">
-     <rect>
-      <x>520</x>
-      <y>60</y>
-      <width>201</width>
-      <height>181</height>
-     </rect>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::StyledPanel</enum>
-    </property>
-    <property name="frameShadow">
-     <enum>QFrame::Raised</enum>
-    </property>
-   </widget>
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
@@ -101,7 +53,7 @@
      <string>监控画面</string>
     </property>
    </widget>
-   <widget class="QGroupBox" name="groupBox">
+   <widget class="QGroupBox" name="ptz_control">
     <property name="geometry">
      <rect>
       <x>40</x>
@@ -113,7 +65,7 @@
     <property name="title">
      <string>云台手动控制</string>
     </property>
-    <widget class="QPushButton" name="pushButton">
+    <widget class="QPushButton" name="ptz_up">
      <property name="geometry">
       <rect>
        <x>50</x>
@@ -126,7 +78,7 @@
       <string>上</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="pushButton_2">
+    <widget class="QPushButton" name="ptz_down">
      <property name="geometry">
       <rect>
        <x>50</x>
@@ -139,7 +91,7 @@
       <string>下</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="pushButton_3">
+    <widget class="QPushButton" name="ptz_left">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -152,7 +104,7 @@
       <string>左</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="pushButton_4">
+    <widget class="QPushButton" name="ptz_right">
      <property name="geometry">
       <rect>
        <x>90</x>
@@ -165,7 +117,7 @@
       <string>右</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="pushButton_5">
+    <widget class="QPushButton" name="ptz_set_zero">
      <property name="geometry">
       <rect>
        <x>160</x>
@@ -178,7 +130,7 @@
       <string>设置校准点</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="pushButton_6">
+    <widget class="QPushButton" name="ptz_go_zeto">
      <property name="geometry">
       <rect>
        <x>160</x>
@@ -204,7 +156,7 @@
       <string>云台位置:</string>
      </property>
     </widget>
-    <widget class="QLabel" name="label_8">
+    <widget class="QLabel" name="ptz_pose">
      <property name="geometry">
       <rect>
        <x>230</x>
@@ -218,7 +170,7 @@
      </property>
     </widget>
    </widget>
-   <widget class="QGroupBox" name="groupBox_2">
+   <widget class="QGroupBox" name="measure">
     <property name="geometry">
      <rect>
       <x>40</x>
@@ -361,7 +313,7 @@
      </property>
     </widget>
    </widget>
-   <widget class="QGroupBox" name="groupBox_3">
+   <widget class="QGroupBox" name="camera_control">
     <property name="geometry">
      <rect>
       <x>460</x>
@@ -373,7 +325,7 @@
     <property name="title">
      <string>摄像头手动控制</string>
     </property>
-    <widget class="QPushButton" name="pushButton_7">
+    <widget class="QPushButton" name="cam_up">
      <property name="geometry">
       <rect>
        <x>50</x>
@@ -386,7 +338,7 @@
       <string>上</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="pushButton_8">
+    <widget class="QPushButton" name="cam_down">
      <property name="geometry">
       <rect>
        <x>50</x>
@@ -399,7 +351,7 @@
       <string>下</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="pushButton_9">
+    <widget class="QPushButton" name="cam_left">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -412,7 +364,7 @@
       <string>左</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="pushButton_10">
+    <widget class="QPushButton" name="cam_right">
      <property name="geometry">
       <rect>
        <x>90</x>
@@ -425,7 +377,7 @@
       <string>右</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="pushButton_11">
+    <widget class="QPushButton" name="cam_set_zero">
      <property name="geometry">
       <rect>
        <x>160</x>
@@ -438,7 +390,7 @@
       <string>设置抓拍点</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="pushButton_12">
+    <widget class="QPushButton" name="cam_go_zero">
      <property name="geometry">
       <rect>
        <x>160</x>
@@ -464,7 +416,7 @@
       <string>摄像头位置:</string>
      </property>
     </widget>
-    <widget class="QLabel" name="label_10">
+    <widget class="QLabel" name="cam_pose">
      <property name="geometry">
       <rect>
        <x>230</x>
@@ -477,6 +429,36 @@
       <string>0,0</string>
      </property>
     </widget>
+   </widget>
+   <widget class="QWidget" name="widget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>60</y>
+      <width>191</width>
+      <height>161</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QWidget" name="widget_2" native="true">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>60</y>
+      <width>201</width>
+      <height>161</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QWidget" name="widget_3" native="true">
+    <property name="geometry">
+     <rect>
+      <x>510</x>
+      <y>60</y>
+      <width>221</width>
+      <height>161</height>
+     </rect>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
