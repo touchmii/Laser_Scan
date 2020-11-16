@@ -1,3 +1,4 @@
+#!/usr/local/bin/python3.7
 from main_window import Ui_MainWindow
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
