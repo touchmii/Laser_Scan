@@ -26,7 +26,20 @@ def translate(data):
     yl = [ np.cos(np.deg2rad(deg[i-1]))*point[i-1] for i in range(number)]
     # yl = [ np.cos(np.deg2rad(d))*p for p,d in point,deg]
     return xl, yl
+def get_draw(s):
+    s.send(b'\x02sRN LMDscandata \x03\0')
 
+    data = s.recv(2000)
+    while True:
+        data = data + s.recv(2000)
+        if data[-2] == 48 and data[-1] == 3 and data[-3] == 32:
+            break
+    datagrams_generator = decode_datagram(data)
+    plt.cla()
+    plt.xlim(-10, 10)
+    plt.ylim(-10, 10)
+    # plt.axis('off')
+    return translate(datagrams_generator)
 
 if __name__ == '__main__':
     # bus = zmqmsgbus.Bus(sub_addr='ipc://ipc/source',
