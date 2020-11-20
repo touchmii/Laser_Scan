@@ -67,7 +67,10 @@ def parse_number(nbr_str):
         return int(nbr_str, 16)
 
 def decode_datagram(datagram):
-    items = datagram.split(b' ')
+    if type(datagram) == type(b' '):
+        items = datagram.split(b' ')
+    else:
+        items = datagram.split(' ')
 
     header = {}
     header['TypeOfCommand'] = items[0].decode('ascii')

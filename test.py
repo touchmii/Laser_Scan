@@ -51,7 +51,34 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         xl, yl = get_draw(self.s)
         self._dynamic_ax.plot(yl, xl)
         self._dynamic_ax.invert_yaxis()
+        # self._dynamic_ax.figure.canvas.draw()
+        lx, ly = self.find_line(yl, xl)
+        for i in range(len(lx) - 1):
+            if 40 < len(ly[i]) < 100:
+                self._dynamic_ax.plot(lx[i][2:-5], ly[i][2:-5], label='ob', color='r', linewidth=1)
+                # print('length: {}, X: {}, Y: {}'.format(abs(lx[i][1]-lx[i][-1]), lx[i][int(len(lx[i])/2)], ly[i][1]))
+                lenth = abs(lx[i][1] - lx[i][-1])
+                x_pose = lx[i][int(len(lx[i]) / 2)]
+                y_pose = ly[i][1]
+                text = 'L: {}, X: {}, Y: {}'.format(format(lenth, '.3f'), format(x_pose, '.3f'), format(y_pose, '.3f'))
+                self._dynamic_ax.text(0, -3, text, ha='center', va='bottom', fontsize=7)
         self._dynamic_ax.figure.canvas.draw()
+
+    def find_line(self, xx, yy):
+        a = [[]]
+        b = [[]]
+        for i in range(len(xx)):
+            if yy[i] > 1.7 and yy[i] < 2.1:
+                if len(a[-1]) == 0:
+                    a[-1].append(xx[i])
+                    b[-1].append(yy[i])
+                elif abs(yy[i] - b[-1][-1]) < 0.2 and abs(xx[i] - a[-1][-1]) < 0.2:
+                    a[-1].append(xx[i])
+                    b[-1].append(yy[i])
+                elif abs(xx[i] - a[-1][-1]) > 0.3:
+                    a.append([xx[i]])
+                    b.append([yy[i]])
+        return a, b
 
 
 if __name__ == "__main__":

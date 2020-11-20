@@ -21,7 +21,7 @@ import time
 
 class ptz():
     def __init__(self, port, baud):
-        self.com = serial.Serial(port=port, baudrate=2400)
+        self.com = serial.Serial(port=port, baudrate=baud)
         # self.com.rs485_mode = serial.rs485.RS485Settings(rts_level_for_tx=True, rts_level_for_rx=False, loopback=False,
         #                                     delay_before_tx=None, delay_before_rx=None)
         self.x = 999
@@ -36,6 +36,7 @@ class ptz():
         self.left = bytearray.fromhex('FF 01 00 04 3F 00 44')
         self.right = bytearray.fromhex('FF 01 00 02 3F 00 42')
         self.stop = bytearray.fromhex('FF 01 00 00 00 00 01')
+        self.hor = bytearray.fromhex('FF 01 00 4B 00 00 4C')
 
     def from_bytes(self, data, big_endian=False):
         if isinstance(data, str):
@@ -52,9 +53,26 @@ class ptz():
         time.sleep(0.1)
         self.com.write(self.query_y)
         y_ret = self.com.read(7)
+        time.sleep(0.2)
         # print(' '.join(map(hex, y_ret)))
         x = self.from_bytes(x_ret[-4:-2])
         y = self.from_bytes(y_ret[-4:-2])
+        return x, y
+    def gooPose(self, xs):
+        self.com.write(self.query_x)
+        x_ret = self.com.read(7)
+        time.sleep(0.1)
+        self.com.write(self.query_y)
+        y_ret = self.com.read(7)
+        time.sleep(0.2)
+        # print(' '.join(map(hex, y_ret)))
+        x = self.from_bytes(x_ret[-4:-2])
+        y = self.from_bytes(y_ret[-4:-2])
+        self.hor[-3:-1] = (xs*100).to_bytes(2, byteorder='big')
+        self.hor[-1] = (0x4C + self.hor[-3] + self.hor[-2])%256
+        print(self.hor)
+        self.com.write(self.hor)
+
 
         return x,y
     def goPose(self, x=0, y=0):
@@ -79,5 +97,15 @@ class ptz():
 
 
 if __name__ == '__main__':
-    ptz = ptz('com3', 9600)
-    print(ptz.getPose())
+    ptz = ptz('/dev/tty.usbserial-A50285BI', 2400)
+    # ptz.gooPose(90)
+    # time.sleep(20)
+    # ptz.gooPose(0)
+    xx, yy = ptz.getPose()
+    dd = int(xx / 100 + 180)
+    if dd > 360:
+        dd = dd - 360
+    ptz.gooPose(dd)
+    # for i in range(0, 180, 1):
+    #     ptz.gooPose(i)
+    #     time.sleep(1)
