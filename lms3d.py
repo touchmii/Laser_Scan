@@ -70,9 +70,9 @@ def translate3d(d):
         z.extend( [ np.sin(np.deg2rad(deg_phi[i-1]))*point[i-1] for i in range(570)] )
         # z.extend( [ np.sin(np.deg2rad(deg_phi2[i+285]))*point[-i-1] for i in range(285)] )
         x.extend( [ np.cos(np.deg2rad(deg_phi[i-1]))*np.cos(np.deg2rad(deg_theta[p-1]))*point[i-1] for i in range(285)] )
-        x.extend( [ np.cos(np.deg2rad(deg_phi[i+284]))*np.cos(np.deg2rad(deg_theta2[p-1]))*point[i+284] for i in range(285)] )
+        x.extend( [ np.cos(np.deg2rad(deg_phi[i+284]))*np.cos(np.deg2rad(deg_theta[p-1]))*(point[i+284]) for i in range(285)] )
         y.extend( [ np.cos(np.deg2rad(deg_phi[i-1]))*np.sin(np.deg2rad(deg_theta[p-1]))*point[i-1] for i in range(285)] )
-        y.extend( [ np.cos(np.deg2rad(deg_phi[i+284]))*np.sin(np.deg2rad(deg_theta2[p-1]))*point[i+284] for i in range(285)] )
+        y.extend( [ np.cos(np.deg2rad(deg_phi[i+284]))*np.sin(np.deg2rad(deg_theta[p-1]))*(point[i+284]) for i in range(285)] )
 
 
     return x, y, z
