@@ -45,6 +45,8 @@ def read_file(name):
     f = open(name,'r')
     lidar_datas = bytes(f.read(), encoding='utf-8')
     data_list = lidar_datas.split(b'\x03\n')
+    data_list.remove(data_list[-1])
+    data_list.remove(data_list[-1])
     p = []
     for i in data_list:
         p.append(decode_datagram(i))
@@ -53,12 +55,12 @@ def read_file(name):
 def translate3d(d):
     deg_phi = np.arange(start=-5, stop=185, step=0.3333)
     deg_phi2 = np.arange(start=185, stop=90, step=-0.3333)
-    deg_theta = np.arange(start=0, stop=180, step=180/884)
-    deg_theta2 = np.arange(start=180, stop=360, step=180/884)
+    deg_theta = np.arange(start=0, stop=180, step=180/len(d))
+    deg_theta2 = np.arange(start=180, stop=360, step=180/len(d))
     # deg_theta = np.arange(start=180, stop=0, step=-180/884)
     # deg_theta2 = np.arange(start=360, stop=180, step=-180/884)
     x, y, z = [], [], []
-    for p in range(0, len(d)-1, 1):
+    for p in range(len(d)):
     # for p in range(0, 1, 1):
         p_number = d[p]['NumberOfData']
         point = d[p]['Data']
@@ -67,12 +69,12 @@ def translate3d(d):
         # x.extend( [ np.sin(np.deg2rad(deg_phi[i-1]))*np.cos(np.deg2rad(deg_theta2[i-1]))*point[i-1] for i in range(285, p_number, 1)] )
         # y.extend( [ np.sin(np.deg2rad(deg_phi[i-1]))*np.sin(np.deg2rad(deg_theta[i-1]))*point[i-1] for i in range(285)] )
         # y.extend( [ np.sin(np.deg2rad(deg_phi[i-1]))*np.sin(np.deg2rad(deg_theta2[i-1]))*point[i-1] for i in range(285, p_number, 1)] )
-        z.extend( [ np.sin(np.deg2rad(deg_phi[i-1]))*point[i-1] for i in range(570)] )
+        z.extend( [ np.sin(np.deg2rad(deg_phi[i]))*point[i] for i in range(570)] )
         # z.extend( [ np.sin(np.deg2rad(deg_phi2[i+285]))*point[-i-1] for i in range(285)] )
-        x.extend( [ np.cos(np.deg2rad(deg_phi[i-1]))*np.cos(np.deg2rad(deg_theta[p-1]))*point[i-1] for i in range(285)] )
-        x.extend( [ np.cos(np.deg2rad(deg_phi[i+284]))*np.cos(np.deg2rad(deg_theta[p-1]))*(point[i+284]) for i in range(285)] )
-        y.extend( [ np.cos(np.deg2rad(deg_phi[i-1]))*np.sin(np.deg2rad(deg_theta[p-1]))*point[i-1] for i in range(285)] )
-        y.extend( [ np.cos(np.deg2rad(deg_phi[i+284]))*np.sin(np.deg2rad(deg_theta[p-1]))*(point[i+284]) for i in range(285)] )
+        x.extend( [ np.cos(np.deg2rad(deg_phi[i]))*np.cos(np.deg2rad(deg_theta[p]))*point[i] for i in range(285)] )
+        x.extend( [ np.cos(np.deg2rad(deg_phi[i+284]))*np.cos(np.deg2rad(deg_theta[p]))*(point[i+285]) for i in range(285)] )
+        y.extend( [ np.cos(np.deg2rad(deg_phi[i]))*np.sin(np.deg2rad(deg_theta[p]))*point[i] for i in range(285)] )
+        y.extend( [ np.cos(np.deg2rad(deg_phi[i+284]))*np.sin(np.deg2rad(deg_theta[p]))*(point[i+285]) for i in range(285)] )
 
 
     return x, y, z
@@ -81,18 +83,7 @@ def create_output(vertices, colors, filename):
     colors = colors.reshape(-1, 3)
     vertices = np.hstack([vertices.reshape(-1, 3), colors])
     np.savetxt(filename, vertices, fmt='%f %f %f %d %d %d')     # 必须先写入，然后利用write()在头部插入ply header
-    ply_header = '''ply
-    		format ascii 1.0
-    		element vertex %(vert_num)d
-    		property float x
-    		property float y
-    		property float z
-    		property uchar red
-    		property uchar green
-    		property uchar blue
-    		end_header
-    		\n
-    		'''
+    ply_header = '''ply\nformat ascii 1.0\nelement vertex %(vert_num)d\nproperty float x\nproperty float y\nproperty float z\nproperty uchar red\nproperty uchar green\nproperty uchar blue\nend_header\n'''
     with open(filename, 'r+') as f:
         old = f.read()
         f.seek(0)

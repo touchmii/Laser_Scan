@@ -1,3 +1,6 @@
+import open3d as o3d
+
+pcd = o3d.io.read_point_cloud("Andre_Agassi_0015.ply")
 print("Downsample the point cloud with a voxel of 0.05")
 downpcd = pcd.voxel_down_sample(voxel_size=0.05)
 o3d.visualization.draw_geometries([downpcd],
