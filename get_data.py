@@ -5,6 +5,7 @@ from datagram_lms151 import *
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+from lms3d import *
 
 TIM561_START_ANGLE = 2.3561944902  # -135° in rad
 TIM561_STOP_ANGLE = -2.3561944902  # 135° in rad

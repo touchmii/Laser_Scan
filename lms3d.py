@@ -54,7 +54,7 @@ def read_file(name):
 
 def translate3d(d):
     deg_phi = np.arange(start=-5, stop=185, step=0.3333)
-    deg_phi2 = np.arange(start=185, stop=90, step=-0.3333)
+    deg_phi2 = np.arange(start=185, stop=-5, step=-0.3333)
     deg_theta = np.arange(start=0, stop=180, step=180/len(d))
     deg_theta2 = np.arange(start=180, stop=360, step=180/len(d))
     # deg_theta = np.arange(start=180, stop=0, step=-180/884)
@@ -69,7 +69,7 @@ def translate3d(d):
         # x.extend( [ np.sin(np.deg2rad(deg_phi[i-1]))*np.cos(np.deg2rad(deg_theta2[i-1]))*point[i-1] for i in range(285, p_number, 1)] )
         # y.extend( [ np.sin(np.deg2rad(deg_phi[i-1]))*np.sin(np.deg2rad(deg_theta[i-1]))*point[i-1] for i in range(285)] )
         # y.extend( [ np.sin(np.deg2rad(deg_phi[i-1]))*np.sin(np.deg2rad(deg_theta2[i-1]))*point[i-1] for i in range(285, p_number, 1)] )
-        z.extend( [ np.sin(np.deg2rad(deg_phi[i]))*point[i] for i in range(570)] )
+        z.extend( [ np.sin(np.deg2rad(deg_phi2[i]))*point[i] for i in range(570)] )
         # z.extend( [ np.sin(np.deg2rad(deg_phi2[i+285]))*point[-i-1] for i in range(285)] )
         x.extend( [ np.cos(np.deg2rad(deg_phi[i]))*np.cos(np.deg2rad(deg_theta[p]))*point[i] for i in range(285)] )
         x.extend( [ np.cos(np.deg2rad(deg_phi[i+284]))*np.cos(np.deg2rad(deg_theta[p]))*(point[i+285]) for i in range(285)] )
@@ -96,7 +96,7 @@ if __name__ == '__main__':
     #
     # node = zmqmsgbus.Node(bus)
     fig = plt.figure()
-    x, y, z = translate3d(read_file('data2.txt'))
+    x, y, z = translate3d(read_file('data2020-11-29-09-15.txt'))
     a = []
     for i in range(len(x)-1):
         a.append([x[i], y[i], z[i]])
@@ -111,7 +111,7 @@ if __name__ == '__main__':
     # Generate point cloud
     print("\n Creating the output file... \n")
     #    create_output(points_3D, colors, output_file)
-    output_file = 'Andre_Agassi_0015.ply'
+    output_file = 'Andre_Agassi_0019.ply'
     create_output(b, one, output_file)
     ax = plt.axes(projection='3d')
     ax.scatter3D(x, y, z)
