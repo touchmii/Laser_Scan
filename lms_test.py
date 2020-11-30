@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import time
 import math
 
-import cv2
+# import cv2
 
 from scipy.signal import savgol_filter
 

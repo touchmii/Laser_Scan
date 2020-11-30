@@ -1,3 +1,4 @@
+#!/usr/local/bin/python3.7
 import sys
 import numpy as np
 import pyqtgraph as pg
@@ -129,7 +130,7 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
     def open_file(self):
         options = QtWidgets.QFileDialog.Options()
         options |= QtWidgets.QFileDialog.DontUseNativeDialog
-        fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "QFileDialog.getOpenFileName()", "",
+        fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "打开文件", "",
                                                   "Polygon File Format Files (*.ply);;Point Cloud Data Files (*.pcd)", options=options)
         if fileName:
             print(fileName)
@@ -139,7 +140,7 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
     def saveFileDialog(self):
         options = QtWidgets.QFileDialog.Options()
         options |= QtWidgets.QFileDialog.DontUseNativeDialog
-        fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "QFileDialog.getSaveFileName()", "",
+        fileName, _ = QtWidgets.QFileDialog.getSaveFileName(self, "保存文件", "",
                                                   "Point Cloud Data Files (*.pcd);;Polygon File Format Files (*.ply)", options=options)
         if fileName[-4:] == '.ply' or fileName[-4:] == '.pcd':
             print(fileName)
