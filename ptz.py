@@ -1,4 +1,5 @@
 import serial
+import serial.tools.list_ports
 # import serial.rs485
 import time
 
@@ -20,8 +21,8 @@ import time
 # ser.close()
 
 class ptz():
-    def __init__(self, port, baud):
-        self.com = serial.Serial(port=port, baudrate=baud)
+    def __init__(self, port=None, baud=None):
+        self.com = None
         # self.com.rs485_mode = serial.rs485.RS485Settings(rts_level_for_tx=True, rts_level_for_rx=False, loopback=False,
         #                                     delay_before_tx=None, delay_before_rx=None)
         self.x = 999
@@ -37,7 +38,11 @@ class ptz():
         self.right = bytearray.fromhex('FF 01 00 02 3F 00 42')
         self.stop = bytearray.fromhex('FF 01 00 00 00 00 01')
         self.hor = bytearray.fromhex('FF 01 00 4B 00 00 4C')
-
+    def connect_port(self, port, baud):
+        self.com = serial.Serial(port=port, baudrate=baud)
+    def get_port_list(self):
+        ports = serial.tools.list_ports.comports()
+        return [port[0] for port in ports]
     def from_bytes(self, data, big_endian=False):
         if isinstance(data, str):
             data = bytearray(data)

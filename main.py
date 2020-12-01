@@ -10,6 +10,8 @@ form_class = uic.loadUiType(uifilename)[0] #dirty reading of the ui file. better
 
 from lms_test import *
 
+from ptz import *
+
 import asyncio
 from quamash import QEventLoop
 
@@ -64,6 +66,13 @@ block = CallbackDataBlock([17]*100)
 store = ModbusSlaveContext(di=block, co=block, hr=block, ir=block)
 context = ModbusServerContext(slaves=store, single=True)
 
+def updating_writer(register, address, value):
+#    context = context[0]
+    slave_id = 0x01
+    values = context[slave_id].getValues(register, address, count=5)
+    values = [v + 1 for v in values]
+    context[slave_id].setValues(register, address, value)
+
 def run_server():
     identity = ModbusDeviceIdentification()
     identity.VendorName = 'Pymodbus'
@@ -110,10 +119,10 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         QtGui.QMainWindow.__init__(self)
         self.setupUi(self)
         # self.widget_2.resize(759, 486)
-        self.graph3DWidget = Surface3D_Graph(defaultNumberOfData, self.widget_2)
+        self.graph3DWidget = Surface3D_Graph(defaultNumberOfData, self.widget_3dscan)
         self.graph3DWidget.setMinimumSize(QtCore.QSize(600, 600))
         self.graph3DWidget.setObjectName("graph3DWidget")
-        self.pushButton_4.pressed.connect(lambda:self.graph3DWidget.home_view())
+        self.zoom_home.pressed.connect(lambda:self.graph3DWidget.home_view())
         self.zoom_left.pressed.connect(lambda:self.graph3DWidget.home_view('left'))
         self.zoom_right.pressed.connect(lambda:self.graph3DWidget.home_view('right'))
         self.zoom_in.pressed.connect(lambda:self.graph3DWidget.home_view('in'))
@@ -127,6 +136,37 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         # self.onInit()
         self.getThread = ThreadExample()
         self.getThread.start()
+
+        self.ptz =ptz()
+        self.comboBox_serial.addItems(self.ptz.get_port_list())
+        self.connect.pressed.connect(lambda:self.connect_serial())
+        self.ptz_up.pressed.connect(lambda: self.ptz_go("up"))
+        self.ptz_up.released.connect(lambda: self.ptz_go("stop"))
+        self.ptz_down.pressed.connect(lambda: self.ptz_go("down"))
+        self.ptz_down.released.connect(lambda: self.ptz_go("stop"))
+        self.ptz_left.pressed.connect(lambda: self.ptz_go("left"))
+        self.ptz_left.released.connect(lambda: self.ptz_go("stop"))
+        self.ptz_right.pressed.connect(lambda: self.ptz_go("right"))
+        self.ptz_right.released.connect(lambda: self.ptz_go("stop"))
+        self.ptz_go_zeto.pressed.connect(lambda: self.ptz_go("zero"))
+    def connect_serial(self):
+        port = self.comboBox_serial.currentText()
+        self.textEdit_debug.append('Connect Port{}'.format(port))
+        # print()
+        self.ptz.connect_port(port=port, baud=2400)
+    def ptz_go(self, dir=""):
+        if dir == "left":
+            self.ptz.goLeft()
+        elif dir == "right":
+            self.ptz.goRight()
+        elif dir == "up":
+            self.ptz.goUp()
+        elif dir == "down":
+            self.ptz.goDown()
+        elif dir == "stop":
+            self.ptz.goStop()
+        elif dir == "zero":
+            self.ptz.goPose()
     def open_file(self):
         options = QtWidgets.QFileDialog.Options()
         options |= QtWidgets.QFileDialog.DontUseNativeDialog

@@ -36,7 +36,7 @@
      <enum>QTabWidget::Rounded</enum>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <property name="elideMode">
      <enum>Qt::ElideMiddle</enum>
@@ -115,7 +115,7 @@
         <string>扫描数量：</string>
        </property>
       </widget>
-      <widget class="QLineEdit" name="lineEdit_2">
+      <widget class="QLineEdit" name="lineEdit_scanrangex">
        <property name="geometry">
         <rect>
          <x>100</x>
@@ -128,7 +128,7 @@
         <string>10</string>
        </property>
       </widget>
-      <widget class="QLineEdit" name="lineEdit_3">
+      <widget class="QLineEdit" name="lineEdit_scanrangey">
        <property name="geometry">
         <rect>
          <x>180</x>
@@ -141,7 +141,7 @@
         <string>10</string>
        </property>
       </widget>
-      <widget class="QLineEdit" name="lineEdit_4">
+      <widget class="QLineEdit" name="lineEdit_scanvolumel">
        <property name="geometry">
         <rect>
          <x>100</x>
@@ -154,7 +154,7 @@
         <string>1</string>
        </property>
       </widget>
-      <widget class="QLineEdit" name="lineEdit_5">
+      <widget class="QLineEdit" name="lineEdit_scanvolumew">
        <property name="geometry">
         <rect>
          <x>180</x>
@@ -167,7 +167,7 @@
         <string>1</string>
        </property>
       </widget>
-      <widget class="QLineEdit" name="lineEdit_6">
+      <widget class="QLineEdit" name="lineEdit_scannumber">
        <property name="geometry">
         <rect>
          <x>100</x>
@@ -222,7 +222,7 @@
       <widget class="QPushButton" name="start_scan">
        <property name="geometry">
         <rect>
-         <x>0</x>
+         <x>20</x>
          <y>60</y>
          <width>71</width>
          <height>31</height>
@@ -235,7 +235,7 @@
       <widget class="QProgressBar" name="progressBar">
        <property name="geometry">
         <rect>
-         <x>10</x>
+         <x>40</x>
          <y>30</y>
          <width>118</width>
          <height>23</height>
@@ -251,7 +251,7 @@
       <widget class="QPushButton" name="pushButton_3">
        <property name="geometry">
         <rect>
-         <x>80</x>
+         <x>110</x>
          <y>60</y>
          <width>71</width>
          <height>31</height>
@@ -264,9 +264,9 @@
       <widget class="QLabel" name="label_18">
        <property name="geometry">
         <rect>
-         <x>10</x>
+         <x>20</x>
          <y>100</y>
-         <width>59</width>
+         <width>41</width>
          <height>16</height>
         </rect>
        </property>
@@ -274,18 +274,21 @@
         <string>位置：</string>
        </property>
       </widget>
-      <widget class="QLineEdit" name="lineEdit_7">
+      <widget class="QLabel" name="scan_pos">
        <property name="geometry">
         <rect>
          <x>70</x>
          <y>100</y>
          <width>121</width>
-         <height>21</height>
+         <height>20</height>
         </rect>
+       </property>
+       <property name="text">
+        <string>TextLabel</string>
        </property>
       </widget>
      </widget>
-     <widget class="QTextEdit" name="textEdit">
+     <widget class="QTextEdit" name="textEdit_debug">
       <property name="geometry">
        <rect>
         <x>550</x>
@@ -308,7 +311,7 @@
        <string>运行日志</string>
       </property>
      </widget>
-     <widget class="QWidget" name="widget_2" native="true">
+     <widget class="QWidget" name="widget_3dscan" native="true">
       <property name="geometry">
        <rect>
         <x>20</x>
@@ -318,7 +321,7 @@
        </rect>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButton_4">
+     <widget class="QPushButton" name="zoom_home">
       <property name="geometry">
        <rect>
         <x>30</x>
@@ -666,7 +669,7 @@
        <property name="geometry">
         <rect>
          <x>200</x>
-         <y>100</y>
+         <y>90</y>
          <width>91</width>
          <height>31</height>
         </rect>
@@ -688,7 +691,7 @@
       <property name="title">
        <string>系统设置</string>
       </property>
-      <widget class="QComboBox" name="comboBox">
+      <widget class="QComboBox" name="comboBox_mode">
        <property name="geometry">
         <rect>
          <x>80</x>
@@ -713,7 +716,7 @@
         </property>
        </item>
       </widget>
-      <widget class="QLabel" name="label_8">
+      <widget class="QLabel" name="mode_type">
        <property name="geometry">
         <rect>
          <x>10</x>
@@ -726,7 +729,7 @@
         <string>模式选择:</string>
        </property>
       </widget>
-      <widget class="QLabel" name="label_10">
+      <widget class="QLabel" name="lidar_ip">
        <property name="geometry">
         <rect>
          <x>10</x>
@@ -739,7 +742,7 @@
         <string>雷达地址:</string>
        </property>
       </widget>
-      <widget class="QLineEdit" name="lineEdit">
+      <widget class="QLineEdit" name="lineEdit_lidaradd">
        <property name="geometry">
         <rect>
          <x>80</x>
@@ -752,21 +755,21 @@
         <string>192.168.0.1</string>
        </property>
       </widget>
-      <widget class="QComboBox" name="comboBox_2">
+      <widget class="QComboBox" name="comboBox_serial">
        <property name="geometry">
         <rect>
-         <x>80</x>
+         <x>70</x>
          <y>90</y>
-         <width>104</width>
+         <width>151</width>
          <height>26</height>
         </rect>
        </property>
       </widget>
-      <widget class="QLabel" name="label_11">
+      <widget class="QLabel" name="serial_port">
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>90</y>
+         <y>100</y>
          <width>60</width>
          <height>16</height>
         </rect>
@@ -775,20 +778,20 @@
         <string>云台串口:</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="pushButton">
+      <widget class="QPushButton" name="connect">
        <property name="geometry">
         <rect>
-         <x>230</x>
+         <x>250</x>
          <y>90</y>
          <width>71</width>
          <height>31</height>
         </rect>
        </property>
        <property name="text">
-        <string>启动</string>
+        <string>连接</string>
        </property>
       </widget>
-      <widget class="QCheckBox" name="checkBox">
+      <widget class="QCheckBox" name="checkBox_startup">
        <property name="geometry">
         <rect>
          <x>230</x>
@@ -801,7 +804,7 @@
         <string>自启动</string>
        </property>
       </widget>
-      <widget class="QCheckBox" name="checkBox_2">
+      <widget class="QCheckBox" name="checkBox_debug">
        <property name="geometry">
         <rect>
          <x>230</x>
@@ -848,7 +851,7 @@
        <string>雷达二维扫描</string>
       </property>
      </widget>
-     <widget class="QWidget" name="widget_3" native="true">
+     <widget class="QWidget" name="widget_camera" native="true">
       <property name="geometry">
        <rect>
         <x>430</x>
@@ -966,7 +969,7 @@
         <rect>
          <x>230</x>
          <y>40</y>
-         <width>60</width>
+         <width>41</width>
          <height>16</height>
         </rect>
        </property>
