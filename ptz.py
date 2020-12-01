@@ -99,6 +99,13 @@ class ptz():
     def goStop(self):
         print("go stop")
         self.com.write(self.stop)
+    def go180(self):
+        xx, yy = self.getPose()
+        # print(xx)
+        dd = int(xx / 100 + 180)
+        if dd > 360:
+            dd = dd - 360
+        self.gooPose(dd)
 
 
 if __name__ == '__main__':

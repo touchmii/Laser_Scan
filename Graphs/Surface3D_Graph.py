@@ -59,6 +59,10 @@ class Surface3D_Graph(gl.GLViewWidget):
         # axis.setSize(self.valueNumber, self.valueNumber, self.valueNumber)
         self.addItem(axis)
         # self.renderText(0., 0., 0., 'text')
+    def updateDData(self, _data):
+        self.np_cloud = _data
+        self.color = np.full((self.np_cloud.shape[0], 4), [0.2, 0, 0, 0.5])
+        self.size = np.full((self.np_cloud.shape[0]), 0.02)
     def mousePressEvent(self, ev):
         self.mousePos = ev.pos()
         print(self.mousePos)

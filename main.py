@@ -5,15 +5,17 @@ import pyqtgraph as pg
 # import pyqtgraph.opengl as gl
 from pyqtgraph.Qt import QtCore, QtGui ,QtWidgets, uic
 from Graphs.Surface3D_Graph import Surface3D_Graph
+from queue import Queue
 uifilename = 'main_window.ui'
 form_class = uic.loadUiType(uifilename)[0] #dirty reading of the ui file. better to convert it to a '.py'
 
-from lms_test import *
+# from lms_test import *
+from lms3d import *
 
 from ptz import *
 
-import asyncio
-from quamash import QEventLoop
+# import asyncio
+# from quamash import QEventLoop
 
 # from pymodbus.server.asyncio import StartTcpServer
 from pymodbus.server.asynchronous import StartTcpServer
@@ -106,6 +108,44 @@ class ThreadExample(QtCore.QThread):
         while True:
             time.sleep(1)
             print('xxxxx')
+class ThreadScan(QtCore.QThread):
+    printSignal = QtCore.pyqtSignal()
+    finished = QtCore.pyqtSignal()
+
+    def __init__(self, ip, q, s, parent=None):
+        QtCore.QThread.__init__(self)
+        # super(ThreadScan, self).__init__(parent)
+        self.ip = ip
+        self.q = q
+        self.s = s
+        # super().__init__(self)
+
+    # def __del__(self):
+    #     self.wait()
+
+    # Code to execute when running the thread
+    def run(self):
+
+        # s.connect((self.ip, 2112))
+        # if self.s.connect
+        self.s.connect((self.ip, 2112))
+        start = time.time()
+        data = []
+        print('xxx')
+        while True:
+            data.append(get_draw(self.s))
+            # print(get_draw(s))
+            time.sleep(0.02)
+            if time.time() - start > 20:
+                break
+        # print(data)
+        self.s.close()
+        print(len(data))
+        x, y, z = translate3d(data)
+        self.q.put([x,y,z])
+        print('len scan {}'.format(len(x)))
+        self.finished.emit()
+
 class MyWidget(QtCore.QObject):
     # 无参数的信号
     Signal_NoParameters = QtCore.pyqtSignal()
@@ -130,10 +170,10 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         self.get_color.pressed.connect(lambda:self.openColorDialog())
         self.timer = QtCore.QBasicTimer()
         self.step = 0
-        self.start_scan.pressed.connect(lambda:self.onStart())
+        self.start_scan.pressed.connect(self.onStart)
         self.actionOpen.triggered.connect(lambda:self.open_file())
         self.actionSave.triggered.connect(lambda:self.saveFileDialog())
-        # self.onInit()
+        self.onInit()
         self.getThread = ThreadExample()
         self.getThread.start()
 
@@ -149,6 +189,9 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         self.ptz_right.pressed.connect(lambda: self.ptz_go("right"))
         self.ptz_right.released.connect(lambda: self.ptz_go("stop"))
         self.ptz_go_zeto.pressed.connect(lambda: self.ptz_go("zero"))
+
+        self.scan_queue = Queue()
+
     def connect_serial(self):
         port = self.comboBox_serial.currentText()
         self.textEdit_debug.append('Connect Port{}'.format(port))
@@ -194,12 +237,25 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
 
     def timerEvent(self, event):
         if self.step >= 19:
+            self.step = 0
             self.timer.stop()
             return
         self.step = self.step + 1
         self.progressBar.setValue(self.step)
 
     def onStart(self):
+        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # self.s.close()
+        add = self.lineEdit_lidaradd.text()
+        print(add)
+        # self.thread = QtCore.QThread()
+        self.scan_thread = ThreadScan(add, self.scan_queue, self.s)
+        # self.scan_thread = ThreadScan()
+        # self.scan_thread.moveToThread(self.thread)
+        self.scan_thread.finished.connect(self.doneScan)
+        # self.thread.start()
+        self.ptz.go180()
+        self.scan_thread.start()
         self.step = 0
         if self.timer.isActive():
             self.timer.stop()
@@ -208,20 +264,25 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
             self.timer.start(1000, self)
             # self.button.setText('Stop')
 
+    def doneScan(self):
+        scan = self.scan_queue.get()
+        scan_cloud = np.array(list(zip(scan[0], scan[1], scan[2])))
+        self.graph3DWidget.updateDData(scan_cloud)
+        self.graph3DWidget.update_draw()
 
-#     def onInit(self):
-# #usually a lot of connections here
-#         self.x_fit = np.linspace(1,10000, 10000)
-#         self.y_fit = [f(_x) for _x in self.x_fit]
-#         self.graphicsView.plot(self.x_fit,self.y_fit,symbol='o',pen=None)
-#         self.graphicsView.setLabel('left',text='toto',units='')
-#         self.graphicsView.setLabel('top',text='tata',units='')
-#         self.ptz_up.pressed.connect(lambda:self.button_click())
-#         datagrams_generator = decode_datagram(lidar_data)
-#         yl,xl = translate(datagrams_generator)
-#         self.graphicsView.plot(xl, yl)
-#     def button_click(self):
-#         print("bbb")
+    def onInit(self):
+#usually a lot of connections here
+        self.x_fit = np.linspace(1,10000, 10000)
+        self.y_fit = [f(_x) for _x in self.x_fit]
+        self.graphicsView.plot(self.x_fit,self.y_fit,symbol='o',pen=None)
+        self.graphicsView.setLabel('left',text='toto',units='')
+        self.graphicsView.setLabel('top',text='tata',units='')
+        # self.ptz_up.pressed.connect(lambda:self.button_click())
+        # datagrams_generator = decode_datagram(lidar_data)
+        # yl,xl = translate(datagrams_generator)
+        # self.graphicsView.plot(xl, yl)
+    # def button_click(self):
+    #     print("bbb")
 
 def f(x):
     return x**2+1

@@ -28,18 +28,19 @@ def translate(data):
     return xl, yl
 def get_draw(s):
     s.send(b'\x02sRN LMDscandata \x03\0')
-
+    # print('send LMD')
     data = s.recv(2000)
     while True:
         data = data + s.recv(2000)
         if data[-2] == 48 and data[-1] == 3 and data[-3] == 32:
             break
     datagrams_generator = decode_datagram(data)
-    plt.cla()
-    plt.xlim(-10, 10)
-    plt.ylim(-10, 10)
+    # plt.cla()
+    # plt.xlim(-10, 10)
+    # plt.ylim(-10, 10)
     # plt.axis('off')
-    return translate(datagrams_generator)
+    # return translate(datagrams_generator)
+    return datagrams_generator
 
 def read_file(name):
     f = open(name,'r')
