@@ -55,12 +55,32 @@ def read_file(name):
 
 def translate3d(d):
     deg_phi = np.arange(start=-5, stop=185, step=0.3333)
+    deg_phi_fix = np.arange(start=-5, stop=184.7, step=0.3333)
     deg_phi2 = np.arange(start=185, stop=-5, step=-0.3333)
     deg_theta = np.arange(start=0, stop=180, step=180/len(d))
+    # deg_theta_fix = np.arange(start=0, stop=180, step=180/len(d))
     deg_theta2 = np.arange(start=180, stop=360, step=180/len(d))
     # deg_theta = np.arange(start=180, stop=0, step=-180/884)
     # deg_theta2 = np.arange(start=360, stop=180, step=-180/884)
     x, y, z = [], [], []
+
+    # x, y, z = np.array()
+    lenth = len(d)
+    T1 = time.time()
+    points = np.asarray([i['Data'][:570] for i in d])
+    points = points.flatten()
+    # print(points)
+    np_deg_phi = np.tile(np.deg2rad(deg_phi_fix), lenth)
+    np_deg_theta = np.repeat(np.deg2rad(deg_theta), 570)
+    np_cos_phi = np.cos(np_deg_phi)
+    np_cos_theta = np.cos(np_deg_theta)
+    np_sin_theta = np.sin(np_deg_theta)
+    zn = -np.sin(np_deg_phi)*points
+    xn = np_cos_phi*np_cos_theta*points
+    yn = np_cos_phi*np_sin_theta*points
+    T2 = time.time()
+    print('程序运行时间:%s毫秒' % ((T2 - T1) * 1000))
+    return xn.tolist(), yn.tolist(), zn.tolist()
     for p in range(len(d)):
     # for p in range(0, 1, 1):
         p_number = d[p]['NumberOfData']
@@ -114,14 +134,14 @@ if __name__ == '__main__':
     #    create_output(points_3D, colors, output_file)
     output_file = 'Andre_Agassi_0019.ply'
     create_output(b, one, output_file)
-    ax = plt.axes(projection='3d')
-    ax.scatter3D(x, y, z)
+    # ax = plt.axes(projection='3d')
+    # ax.scatter3D(x, y, z)
     # ax.contour3D(x, y, z, 50, cmap='binary')
     # ax.set_xlabel('x')
     # ax.set_ylabel('y')
     # ax.set_zlabel('z')
-    ax.view_init(60, 35)
-    plt.show()
+    # ax.view_init(60, 35)
+    # plt.show()
     # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # s.connect(("192.168.0.30", 2112))
     # # activate stream

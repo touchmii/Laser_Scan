@@ -35,6 +35,7 @@ from pymodbus.transaction import ModbusRtuFramer, ModbusBinaryFramer
 #     ir=ModbusSequentialDataBlock(0, [0]*100))
 
 class CallbackDataBlock(ModbusSparseDataBlock):
+
     """ A datablock that stores the new value in memory
     and passes the operation to a message queue for further
     processing.
@@ -57,7 +58,11 @@ class CallbackDataBlock(ModbusSparseDataBlock):
         :param values: The new values to be set
         """
         print(value)
+
         # win.start_scan.checkable(False)
+        # print(address)
+        if address == 1:
+            win.getThread.sendEmit(value[0])
         super(CallbackDataBlock, self).setValues(address, value)
         # MyWidget.Signal_NoParameters.emit()
         # x = MyWidget()
@@ -95,13 +100,16 @@ def run_server():
 defaultNumberOfData = 128
 
 class ThreadExample(QtCore.QThread):
-    printSignal = QtCore.pyqtSignal()
+    # printSignal = QtCore.pyqtSignal()
+    printSignal = QtCore.pyqtSignal(int)
+
     def __init__(self):
         QtCore.QThread.__init__(self)
 
     def __del__(self):
         self.wait()
-
+    def sendEmit(self, i):
+        self.printSignal.emit(i)
     # Code to execute when running the thread
     def run(self):
         run_server()
@@ -158,6 +166,11 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
         self.setupUi(self)
+
+        #添加软件图标
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("./logo.ico"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        QtGui.QMainWindow.setWindowIcon(self, icon)
         # self.widget_2.resize(759, 486)
         self.graph3DWidget = Surface3D_Graph(defaultNumberOfData, self.widget_3dscan)
         self.graph3DWidget.setMinimumSize(QtCore.QSize(600, 600))
@@ -175,7 +188,11 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         self.actionSave.triggered.connect(lambda:self.saveFileDialog())
         self.onInit()
         self.getThread = ThreadExample()
+        self.getThread.printSignal.connect(self.modbusCallback)
         self.getThread.start()
+
+        png = QtGui.QPixmap('resut.png')
+        self.cam_image.setPixmap(png.scaled(250,250,aspectRatioMode=QtCore.Qt.KeepAspectRatio))
 
         self.ptz =ptz()
         self.comboBox_serial.addItems(self.ptz.get_port_list())
@@ -191,7 +208,10 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         self.ptz_go_zeto.pressed.connect(lambda: self.ptz_go("zero"))
 
         self.scan_queue = Queue()
-
+    def modbusCallback(self, val):
+        print('modbuscallback: {}'.format(val))
+        updating_writer(4, 1, [0])
+        self.onStart()
     def connect_serial(self):
         port = self.comboBox_serial.currentText()
         self.textEdit_debug.append('Connect Port{}'.format(port))
@@ -254,7 +274,7 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         # self.scan_thread.moveToThread(self.thread)
         self.scan_thread.finished.connect(self.doneScan)
         # self.thread.start()
-        self.ptz.go180()
+        # self.ptz.go180()
         self.scan_thread.start()
         self.step = 0
         if self.timer.isActive():
@@ -290,6 +310,7 @@ def f(x):
 if __name__ == '__main__':
     if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
         app = QtGui.QApplication([])
+        # app.setWindowIcon(QtGui.QIcon("./logo.ico")) 无效
         pg.setConfigOption('background', 'w')
         # loop = asyncio.get_event_loop()
         win = MyWindowClass()

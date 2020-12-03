@@ -860,6 +860,19 @@
         <height>271</height>
        </rect>
       </property>
+      <widget class="QLabel" name="cam_image">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>311</width>
+         <height>241</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
      </widget>
      <widget class="QGroupBox" name="ptz_control">
       <property name="geometry">
