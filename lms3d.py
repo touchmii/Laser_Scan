@@ -55,11 +55,11 @@ def read_file(name):
 
 def translate3d(d):
     deg_phi = np.arange(start=-5, stop=185, step=0.3333)
-    deg_phi_fix = np.arange(start=-5, stop=184.7, step=0.3333)
+    deg_phi_fix = np.arange(start=-5, stop=185, step=0.3333)
     deg_phi2 = np.arange(start=185, stop=-5, step=-0.3333)
-    deg_theta = np.arange(start=0, stop=180, step=180/len(d))
+    deg_theta4 = np.arange(start=0, stop=180, step=180/len(d))
     # deg_theta_fix = np.arange(start=0, stop=180, step=180/len(d))
-    deg_theta2 = np.arange(start=180, stop=360, step=180/len(d))
+    deg_theta = np.arange(start=180, stop=0, step=-180/len(d))
     # deg_theta = np.arange(start=180, stop=0, step=-180/884)
     # deg_theta2 = np.arange(start=360, stop=180, step=-180/884)
     x, y, z = [], [], []
@@ -67,11 +67,12 @@ def translate3d(d):
     # x, y, z = np.array()
     lenth = len(d)
     T1 = time.time()
-    points = np.asarray([i['Data'][:570] for i in d])
+    # points = np.asarray([i['Data'][:570] for i in d])
+    points = np.asarray([i['Data'] for i in d])
     points = points.flatten()
     # print(points)
     np_deg_phi = np.tile(np.deg2rad(deg_phi_fix), lenth)
-    np_deg_theta = np.repeat(np.deg2rad(deg_theta), 570)
+    np_deg_theta = np.repeat(np.deg2rad(deg_theta), 571)
     np_cos_phi = np.cos(np_deg_phi)
     np_cos_theta = np.cos(np_deg_theta)
     np_sin_theta = np.sin(np_deg_theta)
@@ -117,7 +118,7 @@ if __name__ == '__main__':
     #
     # node = zmqmsgbus.Node(bus)
     fig = plt.figure()
-    x, y, z = translate3d(read_file('data2020-11-29-09-15.txt'))
+    x, y, z = translate3d(read_file('data2020-12-04-16-49.txt'))
     a = []
     for i in range(len(x)-1):
         a.append([x[i], y[i], z[i]])

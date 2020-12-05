@@ -30,6 +30,8 @@ class Surface3D_Graph(gl.GLViewWidget):
         self.setCameraPosition(distance=10)
 
         self.adSurfaceGraph()
+        # self.addGrid()
+        self.addLine()
 
         self.show()
 
@@ -68,13 +70,15 @@ class Surface3D_Graph(gl.GLViewWidget):
         print(self.mousePos)
         print(self.cameraPosition())
     def open_pcd(self, file_name='Andre_Agassi_0019.ply'):
-        cloud = pcl.load(file_name)
+        self.cloud = pcl.load(file_name)
         # cloud.
-        self.np_cloud = np.asarray(cloud)
+        self.np_cloud = np.asarray(self.cloud)
         # self.np_cloud[2] = self.np_cloud[2][::-1]
         # color = np.ones((np_cloud.shape[0],4))
         self.color = np.full((self.np_cloud.shape[0], 4), [0.2, 0, 0, 0.5])
         self.size = np.full((self.np_cloud.shape[0]), 0.02)
+    def get_cloud(self):
+        return self.cloud
     def save_pcd(self, file_name=None):
         if file_name != None:
             cloud = pcl.PointCloud()
@@ -82,6 +86,50 @@ class Surface3D_Graph(gl.GLViewWidget):
             pcl.save(cloud, file_name)
     def update_draw(self):
         self.surfacePlot.setData(pos = self.np_cloud, size = self.size, color=self.color, pxMode=False)
+    def addGrid(self):
+        gx = gl.GLGridItem()
+        gx.rotate(90, 0, 1, 0)
+        gx.translate(-10, 0, 0)
+        self.addItem(gx)
+        gy = gl.GLGridItem()
+        gy.rotate(90, 1, 0, 0)
+        gy.translate(0, -10, 0)
+        self.addItem(gy)
+        gz = gl.GLGridItem()
+        gz.translate(0, 0, -10)
+        self.addItem(gz)
+    def addLine(self):
+        a = np.array([-0.42814296, -0.34476757, -0.2380489 ])
+        b = np.array([0.42814296, 0.34476757, 0.2380489 ])
+        c = np.array([ 0.11085646, -0.0391669,  -1.7693107 ])
+        d = np.array([0.4818, 0.0441, -1.3064])
+        pts = np.array([[0.4818, 0.0441, -1.3064], [-5.216978  ,  -5.6464047 ,   1.279653], [ 0.11085646, -0.0391669,  -1.7693107 ], list(c+a), [1,1,1], [-1,-1,1], [1,1,-1]])
+        color = np.full((6, 4), [0, 0.9, 0, 0.5])
+
+        self.linePlot = gl.GLLinePlotItem(pos=pts, color=color, width=5.0, mode='lines')
+        # self.addItem(self.linePlot)
+        md = gl.MeshData.sphere(rows=10, cols=10)
+        self.m2 = gl.GLMeshItem(meshdata=md, smooth=True, shader='normalColor', glOptions='opaque')
+        self.m2.translate(c[0],c[1],c[2])
+        self.m2.scale(0.1, 0.1, 0.1)
+        # m3 = gl.GLMeshItem(meshdata=md, smooth=True, shader='normalColor', glOptions='opaque')
+        # m3.translate(0.306,-0.397,-1.33)
+        # m3.scale(0.1, 0.1, 0.1)
+        self.addItem(self.m2)
+        # m4 = gl.GLMeshItem(meshdata=md, smooth=True, shader='normalColor', glOptions='opaque')
+        # m4.translate(-0.45,-0.08,-1.57)
+        # m4.scale(0.1, 0.1, 0.1)
+        # self.addItem(m4)
+        # self.addItem(m3)
+    def updateLine(self, pose, color=[0, 0.9, 0, 0.5], width=5):
+        color = np.full((len(pose),4), color)
+        self.linePlot.setData(pos=pose, color=color, width=width)
+        # md = gl.MeshData.sphere(rows=10, cols=10)
+        # m2 = gl.GLMeshItem(meshdata=md, smooth=True, shader='normalColor', glOptions='opaque')
+        self.m2.resetTransform()
+        self.m2.translate(pose[0][0], pose[0][1], pose[0][2], local=True)
+        self.m2.scale(0.1, 0.1, 0.1)
+        self.addItem(self.m2)
     def adSurfaceGraph(self):
         # cloud = pcl.load('downAndre_Agassi_0016.pcd')
 
@@ -170,6 +218,10 @@ class Surface3D_Graph(gl.GLViewWidget):
             self.pan(self.opts['distance']/5,0,0)
         elif dir == 'right':
             self.pan(-self.opts['distance']/5,0,0)
+        elif dir == 'up':
+            self.pan(0,0,self.opts['distance']/5)
+        elif dir == 'down':
+            self.pan(0,0,-self.opts['distance']/5)
         elif dir == 'in':
             self.setCameraPosition(distance=self.opts['distance']-2)
         elif dir == 'out':

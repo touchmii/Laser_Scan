@@ -14,6 +14,9 @@ from lms3d import *
 
 from ptz import *
 
+from object_recognize import *
+import pcl
+
 # import asyncio
 # from quamash import QEventLoop
 
@@ -27,6 +30,11 @@ from pymodbus.datastore import ModbusSequentialDataBlock, ModbusSparseDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 
 from pymodbus.transaction import ModbusRtuFramer, ModbusBinaryFramer
+
+# Import BinaryPayloadBuilder and Endian
+from pymodbus.payload import BinaryPayloadBuilder, Endian
+# Create the builder, Use the correct endians for word and byte
+builder = BinaryPayloadBuilder(byteorder=Endian.Big, wordorder=Endian.Big)
 
 # store = ModbusSlaveContext(
 #     di=ModbusSequentialDataBlock(0, [17]*100),
@@ -153,6 +161,18 @@ class ThreadScan(QtCore.QThread):
         self.q.put([x,y,z])
         print('len scan {}'.format(len(x)))
         self.finished.emit()
+class ThreadRecognize(QtCore.QThread):
+    finished = QtCore.pyqtSignal()
+
+    def __init__(self, cloud, q, parent=None):
+        QtCore.QThread.__init__(self)
+        # super(ThreadScan, self).__init__(parent)
+        self.cloud = cloud
+        self.q = q
+    def run(self):
+        position = get_location(self.cloud)
+        self.q.put(position)
+        self.finished.emit()
 
 class MyWidget(QtCore.QObject):
     # 无参数的信号
@@ -167,6 +187,8 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         QtGui.QMainWindow.__init__(self)
         self.setupUi(self)
 
+        self.cloud = pcl.PointCloud()
+
         #添加软件图标
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("./logo.ico"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -175,9 +197,12 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         self.graph3DWidget = Surface3D_Graph(defaultNumberOfData, self.widget_3dscan)
         self.graph3DWidget.setMinimumSize(QtCore.QSize(600, 600))
         self.graph3DWidget.setObjectName("graph3DWidget")
+        self.cloud = self.graph3DWidget.get_cloud()
         self.zoom_home.pressed.connect(lambda:self.graph3DWidget.home_view())
         self.zoom_left.pressed.connect(lambda:self.graph3DWidget.home_view('left'))
         self.zoom_right.pressed.connect(lambda:self.graph3DWidget.home_view('right'))
+        self.zoom_up.pressed.connect(lambda:self.graph3DWidget.home_view('up'))
+        self.zoom_down.pressed.connect(lambda:self.graph3DWidget.home_view('down'))
         self.zoom_in.pressed.connect(lambda:self.graph3DWidget.home_view('in'))
         self.zoom_out.pressed.connect(lambda:self.graph3DWidget.home_view('out'))
         self.get_color.pressed.connect(lambda:self.openColorDialog())
@@ -207,7 +232,34 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         self.ptz_right.released.connect(lambda: self.ptz_go("stop"))
         self.ptz_go_zeto.pressed.connect(lambda: self.ptz_go("zero"))
 
+        self.manual_recognize.pressed.connect(self.cloudRecognize)
+
+        self.recognize = Queue()
         self.scan_queue = Queue()
+    def cloudRecognize(self):
+        rangex = self.lineEdit_scanrangex.text()
+        rangey = self.lineEdit_scanrangey.text()
+        volumel = self.lineEdit_scanvolumel.text()
+        volumew = self.lineEdit_scanvolumew.text()
+        numbet = self.lineEdit_scannumber.text()
+        self.recognizeThread = ThreadRecognize(self.cloud, self.recognize)
+        self.recognizeThread.start()
+        self.recognizeThread.finished.connect(self.cloudRecognizeFinish)
+        # pass
+    def cloudRecognizeFinish(self):
+        postion = self.recognize.get()
+        print(postion)
+        self.textEdit_debug.append('Recognize Location{}'.format(postion))
+        postion_m = postion*100
+        busvoltages = [int(i) for i in postion_m.tolist()[0]]
+        # updating_writer(4, 2, )
+        builder.reset()  # Reset Old entries
+        for vol in busvoltages:
+            builder.add_16bit_int(vol)
+        payload = builder.to_registers()
+        updating_writer(4, 2, payload)
+        self.graph3DWidget.updateLine(postion)
+        # pass
     def modbusCallback(self, val):
         print('modbuscallback: {}'.format(val))
         updating_writer(4, 1, [0])
@@ -274,7 +326,7 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         # self.scan_thread.moveToThread(self.thread)
         self.scan_thread.finished.connect(self.doneScan)
         # self.thread.start()
-        # self.ptz.go180()
+        self.ptz.go180()
         self.scan_thread.start()
         self.step = 0
         if self.timer.isActive():
@@ -287,8 +339,10 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
     def doneScan(self):
         scan = self.scan_queue.get()
         scan_cloud = np.array(list(zip(scan[0], scan[1], scan[2])))
+        self.cloud = pcl.PointCloud.from_array(scan_cloud)
         self.graph3DWidget.updateDData(scan_cloud)
         self.graph3DWidget.update_draw()
+        self.cloudRecognize()
 
     def onInit(self):
 #usually a lot of connections here
