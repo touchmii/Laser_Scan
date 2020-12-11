@@ -65,11 +65,12 @@ class CallbackDataBlock(ModbusSparseDataBlock):
         :param address: The starting address
         :param values: The new values to be set
         """
-        print(value)
+        print('value: {}, address: {}, type: {}'.format(value, address, self.getValues(99)))
+
 
         # win.start_scan.checkable(False)
         # print(address)
-        if address == 1:
+        if address == 1 and self.getValues(99) == [17]:
             win.getThread.sendEmit(value[0])
         super(CallbackDataBlock, self).setValues(address, value)
         # MyWidget.Signal_NoParameters.emit()
@@ -78,7 +79,8 @@ class CallbackDataBlock(ModbusSparseDataBlock):
         # x.Signal_NoParameters.emit()
         # self.queue.put((self.devices.get(address, None), value))
 block = CallbackDataBlock([17]*100)
-store = ModbusSlaveContext(di=block, co=block, hr=block, ir=block)
+block2 = CallbackDataBlock([18]*100)
+store = ModbusSlaveContext(di=block, co=block, hr=block, ir=block2)
 context = ModbusServerContext(slaves=store, single=True)
 
 def updating_writer(register, address, value):
@@ -164,14 +166,20 @@ class ThreadScan(QtCore.QThread):
 class ThreadRecognize(QtCore.QThread):
     finished = QtCore.pyqtSignal()
 
-    def __init__(self, cloud, q, parent=None):
+    def __init__(self, cloud, q, rangex, rangey, volumel, volumew, parent=None):
         QtCore.QThread.__init__(self)
         # super(ThreadScan, self).__init__(parent)
         self.cloud = cloud
         self.q = q
+        self.rangex = rangex
+        self.rangey = rangey
+        self.volumel = volumel
+        self.volumew = volumew
     def run(self):
-        position = get_location(self.cloud)
+        position, ea, draw_point = get_location(self.cloud, self.rangex, self.rangey, self.volumel, self.volumew)
         self.q.put(position)
+        self.q.put(ea)
+        self.q.put(draw_point)
         self.finished.emit()
 
 class MyWidget(QtCore.QObject):
@@ -236,34 +244,62 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
 
         self.recognize = Queue()
         self.scan_queue = Queue()
+        self.scan_status = 1
     def cloudRecognize(self):
-        rangex = self.lineEdit_scanrangex.text()
-        rangey = self.lineEdit_scanrangey.text()
-        volumel = self.lineEdit_scanvolumel.text()
-        volumew = self.lineEdit_scanvolumew.text()
+        rangex = int(self.lineEdit_scanrangex.text())
+        rangey = int(self.lineEdit_scanrangey.text())
+        volumel = int(self.lineEdit_scanvolumel.text())
+        volumew = int(self.lineEdit_scanvolumew.text())
         numbet = self.lineEdit_scannumber.text()
-        self.recognizeThread = ThreadRecognize(self.cloud, self.recognize)
+        self.recognizeThread = ThreadRecognize(self.cloud, self.recognize, rangex, rangey, volumel, volumew)
         self.recognizeThread.start()
         self.recognizeThread.finished.connect(self.cloudRecognizeFinish)
         # pass
     def cloudRecognizeFinish(self):
+
         postion = self.recognize.get()
-        print(postion)
-        self.textEdit_debug.append('Recognize Location{}'.format(postion))
+        ea = self.recognize.get()
+        ea_deg = np.rad2deg(ea)
+        draw_point = self.recognize.get()
+        if type(postion) == int:
+            updating_writer(4, 0, [2])
+            self.scan_status = 2
+            self.textEdit_debug.append('Recognize ERROR')
+            return
+        updating_writer(4, 0, [0])
+        self.scan_status = 0
+        # print('xx draw_point: {}'.format(draw_point))
+        # print(postion)
+        distL = np.linalg.norm(draw_point[0] - draw_point[1])
+        distW = np.linalg.norm(draw_point[1] - draw_point[2])
+        if distL < distW:
+            distL, distW = distW, distL
+        self.textEdit_debug.append('Recognize Location{} \nRotaion Euler: {} \nLength: {:.2} M, Width: {:.2} M.'.format(postion.round(2), ea_deg.round(2), distL, distW))
         postion_m = postion*100
-        busvoltages = [int(i) for i in postion_m.tolist()[0]]
+        busvoltages = [int(i) for i in postion_m.tolist()]
         # updating_writer(4, 2, )
         builder.reset()  # Reset Old entries
         for vol in busvoltages:
             builder.add_16bit_int(vol)
+        ea_deg_m = ea_deg*10
         payload = builder.to_registers()
+        busvoltages2 = [int(i) for i in ea_deg_m.tolist()]
+        builder.reset()  # Reset Old entries
+        for vol in busvoltages2:
+            builder.add_16bit_int(vol)
+        payload2 = builder.to_registers()
         updating_writer(4, 2, payload)
-        self.graph3DWidget.updateLine(postion)
+        updating_writer(4, 5, payload2)
+        # updating_writer(4, 5, [int(ea_deg[0]*10), int(ea_deg*10), int(ea_deg*10)])
+        updating_writer(4, 8, [int(distL*100), int(distW*100)])
+
+        self.graph3DWidget.updateLine(postion, draw_point)
         # pass
     def modbusCallback(self, val):
         print('modbuscallback: {}'.format(val))
-        updating_writer(4, 1, [0])
-        self.onStart()
+        # updating_writer(4, 1, [0])
+        if val == 1 and self.scan_status == 0:
+            self.onStart()
     def connect_serial(self):
         port = self.comboBox_serial.currentText()
         self.textEdit_debug.append('Connect Port{}'.format(port))
@@ -316,6 +352,8 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         self.progressBar.setValue(self.step)
 
     def onStart(self):
+        updating_writer(4, 0, [1])
+        self.scan_status = 1
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # self.s.close()
         add = self.lineEdit_lidaradd.text()

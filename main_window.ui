@@ -112,7 +112,7 @@
         </rect>
        </property>
        <property name="text">
-        <string>10</string>
+        <string>2</string>
        </property>
       </widget>
       <widget class="QLineEdit" name="lineEdit_scanrangey">
@@ -125,7 +125,7 @@
         </rect>
        </property>
        <property name="text">
-        <string>10</string>
+        <string>2</string>
        </property>
       </widget>
       <widget class="QLineEdit" name="lineEdit_scanvolumel">

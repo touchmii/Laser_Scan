@@ -75,7 +75,8 @@ class Surface3D_Graph(gl.GLViewWidget):
         self.np_cloud = np.asarray(self.cloud)
         # self.np_cloud[2] = self.np_cloud[2][::-1]
         # color = np.ones((np_cloud.shape[0],4))
-        self.color = np.full((self.np_cloud.shape[0], 4), [0.2, 0, 0, 0.5])
+        # self.color = np.full((self.np_cloud.shape[0], 4), [0.2, 0, 0, 0.5])
+        self.color = np.full((self.np_cloud.shape[0], 4), [0.039216, 0.2, 1, 1])
         self.size = np.full((self.np_cloud.shape[0]), 0.02)
     def get_cloud(self):
         return self.cloud
@@ -104,10 +105,18 @@ class Surface3D_Graph(gl.GLViewWidget):
         c = np.array([ 0.11085646, -0.0391669,  -1.7693107 ])
         d = np.array([0.4818, 0.0441, -1.3064])
         pts = np.array([[0.4818, 0.0441, -1.3064], [-5.216978  ,  -5.6464047 ,   1.279653], [ 0.11085646, -0.0391669,  -1.7693107 ], list(c+a), [1,1,1], [-1,-1,1], [1,1,-1]])
-        color = np.full((6, 4), [0, 0.9, 0, 0.5])
+        ptss = np.array([[-0.2336967,  -0.01164758, -1.4284158 ],
+            [-0.08075887,  0.33305264, -1.4650047 ],
+            [ 0.605029,    0.01541734, -1.5908893 ],
+            [ 0.45209116, -0.32928282, -1.5543004 ],
+            [-0.34442478, -0.02340117, -2.0019777 ],
+            [-0.19148695,  0.32129902, -2.0385666 ],
+            [ 0.4943009,   0.00366375, -2.1644514 ],
+            [ 0.34136307, -0.34103644, -2.1278625 ]])
+        color = np.full((8, 4), [0, 0.9, 0, 0.5])
 
-        self.linePlot = gl.GLLinePlotItem(pos=pts, color=color, width=5.0, mode='lines')
-        # self.addItem(self.linePlot)
+        self.linePlot = gl.GLLinePlotItem(pos=ptss, color=color, width=5.0, mode='lines')
+        self.addItem(self.linePlot)
         md = gl.MeshData.sphere(rows=10, cols=10)
         self.m2 = gl.GLMeshItem(meshdata=md, smooth=True, shader='normalColor', glOptions='opaque')
         self.m2.translate(c[0],c[1],c[2])
@@ -121,13 +130,14 @@ class Surface3D_Graph(gl.GLViewWidget):
         # m4.scale(0.1, 0.1, 0.1)
         # self.addItem(m4)
         # self.addItem(m3)
-    def updateLine(self, pose, color=[0, 0.9, 0, 0.5], width=5):
-        color = np.full((len(pose),4), color)
-        self.linePlot.setData(pos=pose, color=color, width=width)
+    def updateLine(self, pose, line_pose, color=[1, 0.984314, 0, 1], width=5):
+        color = np.full((len(line_pose),4), color)
+        self.linePlot.setData(pos=line_pose, color=color, width=width, mode='line_strip')
+        self.addItem(self.linePlot)
         # md = gl.MeshData.sphere(rows=10, cols=10)
         # m2 = gl.GLMeshItem(meshdata=md, smooth=True, shader='normalColor', glOptions='opaque')
         self.m2.resetTransform()
-        self.m2.translate(pose[0][0], pose[0][1], pose[0][2], local=True)
+        self.m2.translate(pose[0], pose[1], pose[2], local=True)
         self.m2.scale(0.1, 0.1, 0.1)
         self.addItem(self.m2)
     def adSurfaceGraph(self):
@@ -219,9 +229,9 @@ class Surface3D_Graph(gl.GLViewWidget):
         elif dir == 'right':
             self.pan(-self.opts['distance']/5,0,0)
         elif dir == 'up':
-            self.pan(0,0,self.opts['distance']/5)
-        elif dir == 'down':
             self.pan(0,0,-self.opts['distance']/5)
+        elif dir == 'down':
+            self.pan(0,0,self.opts['distance']/5)
         elif dir == 'in':
             self.setCameraPosition(distance=self.opts['distance']-2)
         elif dir == 'out':
