@@ -130,12 +130,13 @@ class ThreadScan(QtCore.QThread):
     printSignal = QtCore.pyqtSignal()
     finished = QtCore.pyqtSignal()
 
-    def __init__(self, ip, q, s, parent=None):
+    def __init__(self, ip, q, s, angle, parent=None):
         QtCore.QThread.__init__(self)
         # super(ThreadScan, self).__init__(parent)
         self.ip = ip
         self.q = q
         self.s = s
+        self.angle = angle
         # super().__init__(self)
 
     # def __del__(self):
@@ -159,7 +160,10 @@ class ThreadScan(QtCore.QThread):
         # print(data)
         self.s.close()
         print(len(data))
-        x, y, z = translate3d(data)
+        if self.angle > 15000:
+            x, y, z = translate3d(data, True)
+        else:
+            x, y, z = translate3d(data, False)
         self.q.put([x,y,z])
         print('len scan {}'.format(len(x)))
         self.finished.emit()
@@ -270,11 +274,12 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         self.scan_status = 0
         # print('xx draw_point: {}'.format(draw_point))
         # print(postion)
-        distL = np.linalg.norm(draw_point[0] - draw_point[1])
-        distW = np.linalg.norm(draw_point[1] - draw_point[2])
+        distH = np.linalg.norm(draw_point[0] - draw_point[1])
+        distL = np.linalg.norm(draw_point[1] - draw_point[3])
+        distW = np.linalg.norm(draw_point[0] - draw_point[4])
         if distL < distW:
             distL, distW = distW, distL
-        self.textEdit_debug.append('Recognize Location{} \nRotaion Euler: {} \nLength: {:.2} M, Width: {:.2} M.'.format(postion.round(2), ea_deg.round(2), distL, distW))
+        self.textEdit_debug.append('Recognize Location{} \nRotaion Euler: {} \nLength: {:.2} M, Width: {:.2} M, High: {:.2} M.'.format(postion.round(2), ea_deg.round(2), distL, distW, distH))
         postion_m = postion*100
         busvoltages = [int(i) for i in postion_m.tolist()]
         # updating_writer(4, 2, )
@@ -291,9 +296,9 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         updating_writer(4, 2, payload)
         updating_writer(4, 5, payload2)
         # updating_writer(4, 5, [int(ea_deg[0]*10), int(ea_deg*10), int(ea_deg*10)])
-        updating_writer(4, 8, [int(distL*100), int(distW*100)])
+        updating_writer(4, 8, [int(distL*100), int(distW*100), int(distH*100)])
 
-        self.graph3DWidget.updateLine(postion, draw_point)
+        self.graph3DWidget.updateLine(postion, draw_point[:5])
         # pass
     def modbusCallback(self, val):
         print('modbuscallback: {}'.format(val))
@@ -327,6 +332,7 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
             print(fileName)
             self.graph3DWidget.open_pcd(fileName)
             self.graph3DWidget.update_draw()
+            self.cloud = self.graph3DWidget.get_cloud()
 
     def saveFileDialog(self):
         options = QtWidgets.QFileDialog.Options()
@@ -359,11 +365,13 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
         add = self.lineEdit_lidaradd.text()
         print(add)
         # self.thread = QtCore.QThread()
-        self.scan_thread = ThreadScan(add, self.scan_queue, self.s)
+        start_angle, = self.ptz.getPose()
+        self.scan_thread = ThreadScan(add, self.scan_queue, self.s, start_angle)
         # self.scan_thread = ThreadScan()
         # self.scan_thread.moveToThread(self.thread)
         self.scan_thread.finished.connect(self.doneScan)
         # self.thread.start()
+
         self.ptz.go180()
         self.scan_thread.start()
         self.step = 0
@@ -377,7 +385,8 @@ class MyWindowClass(QtGui.QMainWindow, form_class):
     def doneScan(self):
         scan = self.scan_queue.get()
         scan_cloud = np.array(list(zip(scan[0], scan[1], scan[2])))
-        self.cloud = pcl.PointCloud.from_array(scan_cloud)
+        self.cloud = pcl.PointCloud()
+        self.cloud.from_array(scan_cloud.astype(np.float32))
         self.graph3DWidget.updateDData(scan_cloud)
         self.graph3DWidget.update_draw()
         self.cloudRecognize()

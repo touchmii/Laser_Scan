@@ -53,13 +53,15 @@ def read_file(name):
         p.append(decode_datagram(i))
     return p
 
-def translate3d(d):
+def translate3d(d, reverse=False):
     deg_phi = np.arange(start=-5, stop=185, step=0.3333)
     deg_phi_fix = np.arange(start=-5, stop=185, step=0.3333)
     deg_phi2 = np.arange(start=185, stop=-5, step=-0.3333)
-    deg_theta4 = np.arange(start=0, stop=180, step=180/len(d))
     # deg_theta_fix = np.arange(start=0, stop=180, step=180/len(d))
-    deg_theta = np.arange(start=180, stop=0, step=-180/len(d))
+    if reverse == True:
+        deg_theta = np.arange(start=180, stop=0, step=-180/len(d))
+    else:
+        deg_theta = np.arange(start=0, stop=180, step=180/len(d))
     # deg_theta = np.arange(start=180, stop=0, step=-180/884)
     # deg_theta2 = np.arange(start=360, stop=180, step=-180/884)
     x, y, z = [], [], []
@@ -83,7 +85,7 @@ def translate3d(d):
     print('程序运行时间:%s毫秒' % ((T2 - T1) * 1000))
     return xn.tolist(), yn.tolist(), zn.tolist()
     for p in range(len(d)):
-    # for p in range(0, 1, 1):
+        # for p in range(0, 1, 1):
         p_number = d[p]['NumberOfData']
         point = d[p]['Data']
         # z.extend( [ np.cos(np.deg2rad(deg_phi[i-1]))*point[i-1] for i in range(p_number)] )
@@ -118,7 +120,8 @@ if __name__ == '__main__':
     #
     # node = zmqmsgbus.Node(bus)
     fig = plt.figure()
-    x, y, z = translate3d(read_file('data2020-12-04-16-49.txt'))
+    # x, y, z = translate3d(read_file('data2020-12-04-16-49.txt'))
+    x, y, z = translate3d(read_file('data2020-11-27-14-19.txt'))
     a = []
     for i in range(len(x)-1):
         a.append([x[i], y[i], z[i]])
@@ -133,7 +136,7 @@ if __name__ == '__main__':
     # Generate point cloud
     print("\n Creating the output file... \n")
     #    create_output(points_3D, colors, output_file)
-    output_file = 'Andre_Agassi_0019.ply'
+    output_file = 'Andre_Agassi_0018.ply'
     create_output(b, one, output_file)
     # ax = plt.axes(projection='3d')
     # ax.scatter3D(x, y, z)

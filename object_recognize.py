@@ -24,11 +24,13 @@ def do_euclidean_clustering(white_cloud):
     tree = white_cloud.make_kdtree()
     # Create Cluster-Mask Point Cloud to visualize each cluster separately
     ec = white_cloud.make_EuclideanClusterExtraction()
-    ec.set_ClusterTolerance(0.10)
+    # ec.set_ClusterTolerance(0.10)
+    ec.set_ClusterTolerance(0.15)
     # ec.set_MinClusterSize(20000)
     #    ec.set_MinClusterSize(20000)
     #    ec.set_MaxClusterSize(60000)
-    ec.set_MinClusterSize(100)
+    # ec.set_MinClusterSize(100)
+    ec.set_MinClusterSize(75)
     ec.set_MaxClusterSize(600)
     ec.set_SearchMethod(tree)
     cluster_indices = ec.Extract()
@@ -107,6 +109,7 @@ def get_location(cloud, rangex, rangey, volumel, volumew):
 #     cloud2 = ModelPlane(cloud, True)
     cloud3 = downSample(cloud2, abs(rangex), abs(rangey), 10)
     cloud4, b = do_euclidean_clustering(cloud3)
+    # pcl.save(cloud4, 'xxddd33.pcd')
     if cloud4.size == 0:
         return -1, -1, -1
 #    cloud31 = ModelPlane(cloud4, threshold=0.05)
@@ -125,15 +128,17 @@ def get_location(cloud, rangex, rangey, volumel, volumew):
     # box.filter(cloud32)
 #    cloud5 = ModelPlane(cloud4)
 #     pcl.save(cloud4, 'xx1dd.pcd')
-    # pcl.save(cloud31, 'xxddd3.pcd')
+#     pcl.save(cloud31, 'xxddd31.pcd')
+#     pcl.save(cloud32, 'xxddd32.pcd')
+
 #    return getOBB(cloud4)
     return getOBB(cloud31)
 
 if __name__ == "__main__":
-    cloud = pcl.load('Andre_Agassi_0019.ply')
+    cloud = pcl.load('Andre_Agassi_0009.ply')
 #    cloud = pcl.load('20201206.pcd')
     cloud2 = pcl.load('xxd.ply')
-    get_location(cloud)
+    get_location(cloud, 10, 2, 2, 2)
 #    cloud3 = ModelPlane(cloud2, threshold=0.005 ,ext=True)
 #    cloud31 = ModelPlane(cloud2, threshold=0.05)
 #    cloud4 = ModelPlane(cloud31, threshold=0.005 ,ext=False)
